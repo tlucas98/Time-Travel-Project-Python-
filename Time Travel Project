@@ -1,0 +1,418 @@
+import mysql.connector
+
+# Execute:
+# python3 timetravel.py
+#
+
+mydb = mysql.connector.connect(
+  host="localhost",
+  user="root",
+  passwd="",
+  database="timetravel"
+)
+
+
+#FUNCTIONS
+
+# FUNCTIONS FOR USERS
+
+def showallUsers():
+  
+  mycursor = mydb.cursor()
+
+  mycursor.execute("SELECT * FROM Users")
+
+  myresult = mycursor.fetchall()
+
+  for x in myresult:
+    print(x)
+    
+  return;
+
+def findUserbyID():
+    
+    id = input("Traveler ID: ")
+
+    mycursor = mydb.cursor()
+    sql = "SELECT UserID, UserName, Email, DateOfBirth FROM Users WHERE UserID = %s"
+    arg = (id, )
+
+    mycursor.execute(sql, arg)
+
+    myresult = mycursor.fetchall()
+
+    for x in myresult:
+       print(x)
+    
+    return;
+
+def findUserbyName():
+  name = input("Name: ")
+
+  mycursor = mydb.cursor()
+
+  sql = "SELECT UserID, UserName, Email, DateOfBirth "\
+        "FROM Users "\
+        "WHERE UserName LIKE %s"
+      
+  arg = (name, )
+
+  mycursor.execute(sql, arg)
+
+  myresult = mycursor.fetchall()
+
+  for x in myresult:
+    print(x)
+
+  return;
+
+def insertTraveler():
+  name = input("Traveler Name: ")
+  email = input("Email: ")
+  pw = input("Password: ")
+  dob = input("DOB (YYYY-MM-DD): ")
+
+  
+
+  mycursor = mydb.cursor()
+
+  sql = "INSERT INTO Users(UserName, email, Password, DateOfBirth) " \
+                                    "VALUES(%s,%s,%s,%s)"
+    
+  arg = (name, email, pw, dob, )
+
+  mycursor.execute(sql, arg)
+
+  mydb.commit()
+  return;
+
+# FUNCTIONS FOR MACHINES
+
+def showallMachines():
+  
+  mycursor = mydb.cursor()
+
+  mycursor.execute("SELECT * FROM TimeMachines")
+
+  myresult = mycursor.fetchall()
+
+  for x in myresult:
+    print(x)
+    
+  return;
+
+def findMachinebyID():
+    
+    id = input("Time Machine ID: ")
+
+    mycursor = mydb.cursor()
+    sql = "SELECT * FROM TimeMachines WHERE MachineID = %s"
+    arg = (id, )
+
+    mycursor.execute(sql, arg)
+
+    myresult = mycursor.fetchall()
+
+    for x in myresult:
+       print(x)
+    
+    return;
+
+def findMachinebyManu():
+  manu = input("Manufacturer Name: ")
+
+  mycursor = mydb.cursor()
+
+  sql = "SELECT * " \
+        "FROM TimeMachines " \
+        "WHERE Manufacturer = %s"
+          
+  arg = (manu, )
+
+  mycursor.execute(sql, arg)
+
+  myresult = mycursor.fetchall()
+
+  for x in myresult:
+    print(x)
+
+  return;
+
+def insertMachine():
+  manu = input("Machine Manufacturer: ")
+  Model = input("Machine Model: ")
+  Capacity = input("Machine Capacity: ")
+
+  
+
+  mycursor = mydb.cursor()
+
+  sql = "INSERT INTO TimeMachines (Model, Manufacturer, Capacity) " \
+                                    "VALUES(%s,%s,%s)"
+    
+  arg = (Model, manu, Capacity, )
+
+  mycursor.execute(sql, arg)
+
+  mydb.commit()
+  return;
+
+#FUNCTIONS FOR BOOKINGS
+
+def showallBookings():
+  
+  mycursor = mydb.cursor()
+
+  mycursor.execute("SELECT * FROM Bookings")
+
+  myresult = mycursor.fetchall()
+
+  for x in myresult:
+    print(x)
+    
+  return;
+
+def findBookingbyID():
+    
+  id = input("Booking ID: ")
+
+  mycursor = mydb.cursor()
+  sql = "SELECT * FROM Bookings WHERE BookingID = %s"
+  arg = (id, )
+
+  mycursor.execute(sql, arg)
+
+  myresult = mycursor.fetchall()
+
+  for x in myresult:
+      print(x)
+  
+  return;
+
+def insertBooking():
+
+  UserID = input("Traveler ID: ")
+  mach_id = input("Machine ID: ")
+  dest_id = input("Destination ID: ")
+  book = input("Booking Date (YYYY-MM-DD): ")
+  dept = input("Departure Date (YYYY-MM-DD): ")
+  ret = input("Return Date (YYYY-MM-DD): ")
+
+
+  mycursor = mydb.cursor()
+
+  sql = "INSERT INTO Bookings (UserID, MachineID, DestinationID, BookingDate, DepartureDate, ReturnDate) " \
+                                    "VALUES(%s, %s, %s, %s, %s, %s)"
+    
+  arg = (UserID, mach_id, dest_id, book, dept, ret, )
+
+  mycursor.execute(sql, arg)
+
+  mydb.commit()
+  return;
+
+#FUNCTIONS FOR DESTINATIONS
+
+def showallDestinations():
+  
+  mycursor = mydb.cursor()
+
+  mycursor.execute("SELECT * FROM Destinations")
+
+  myresult = mycursor.fetchall()
+
+  for x in myresult:
+    print(x)
+    
+  return;
+
+  # Find
+
+def findDestbyID():
+    
+    id = input("Destination ID: ")
+
+    mycursor = mydb.cursor()
+    sql = "SELECT * FROM Destinations WHERE DestinationID = %s"
+    arg = (id, )
+
+    mycursor.execute(sql, arg)
+
+    myresult = mycursor.fetchall()
+
+    for x in myresult:
+       print(x)
+    
+    return;
+
+# Aggregation query 1
+def aggregate():
+  mycursor = mydb.cursor()
+  sql = "SELECT Users.UserID, UserName, COUNT(Bookings.BookingID) AS NumBookings FROM Users LEFT JOIN Bookings ON Users.UserID = Bookings.UserID GROUP BY Users.UserID, UserName ORDER BY NumBookings DESC LIMIT 1"
+  mycursor.execute(sql)
+  myresult = mycursor.fetchall()
+  for x in myresult:
+    print(x)
+  return;
+
+# Find something using at least two fields with two different data types
+
+def showallUs():
+  mycursor = mydb.cursor()
+  sql = "SELECT Users.UserID, UserName, COUNT(Bookings.BookingID), Password AS BookingCount FROM Users JOIN Bookings ON Users.UserID = Bookings.UserID GROUP BY Users.UserID, UserName HAVING COUNT(Bookings.BookingID) >= 1"
+  mycursor.execute(sql)
+  myresult = mycursor.fetchall()
+  for x in myresult:
+    print(x)
+  return;
+
+# Aggregation query 2
+def average():
+  mycursor = mydb.cursor()
+  sql = "SELECT CAST(AVG(Capacity) AS DECIMAL(10, 0)) AS AverageCapacity FROM TimeMachines"
+  mycursor.execute(sql)
+  myresult = mycursor.fetchall()
+  for x in myresult:
+    print(x)
+  return;
+
+
+def findDestbyName():
+  dest = input("Country Name: ")
+
+  mycursor = mydb.cursor()
+
+  sql = "SELECT * " \
+        "FROM Destinations " \
+        "WHERE Location = %s"
+      
+  arg = (dest, )
+
+  mycursor.execute(sql, arg)
+
+  myresult = mycursor.fetchall()
+
+  for x in myresult:
+    print(x)
+
+  return;
+
+# Insert
+
+def insertDestination():
+  Location = input("Destination Location: ")
+  TimePeriod = input("Time Period: ")
+  Description = input("Description: ")
+
+  mycursor = mydb.cursor()
+
+  sql = "INSERT INTO Destinations (Location, TimePeriod, Description) " \
+                                    "VALUES(%s, %s, %s)"
+    
+  arg = (Location, TimePeriod, Description, )
+
+  mycursor.execute(sql, arg)
+
+  mydb.commit()
+  return;
+
+# Delete
+def deleteDestination():
+    
+    id = input("Destination ID to Delete: ")
+
+    mycursor = mydb.cursor()
+
+    sql2 = "DELETE FROM Bookings WHERE DestinationID = %s"
+    arg2 = (id, )
+    mycursor.execute(sql2, arg2)
+
+    sql = "DELETE FROM Destinations WHERE DestinationID = %s"
+    arg = (id, )
+    mycursor.execute(sql, arg)
+
+    
+    
+    return;
+
+# aggregation statement
+def updateUser():
+    id = input("Traveler ID to Change Password: ")
+    newpw = input("New Password: ")
+    
+    mycursor = mydb.cursor()
+    sql = "UPDATE Users SET PASSWORD = %s WHERE UserID = %s"
+    arg = (newpw, id, )
+
+    mycursor.execute(sql, arg)
+    
+    return;
+
+
+option = 0;
+
+while option != 19: 
+  #TODO: edit to fit new database
+  print("")
+  print("1. Add a time traveler")
+  print("2. Find a traveler by id")
+  print("3. Find a traveler by name")
+  print("4. Show all travelers with more than one booking")
+  print("5. Update traveler password")
+  print("---------------------------")
+  print("6. Add a time machine")
+  print("7. Find a time machine by id")
+  print("8. Find a time machine by Manufacturer")
+  print("9. Show all time machines")
+  print("10. Show average time machine capacity")
+  print("---------------------------")
+  print("11. Add a booking")
+  print("12. Find a booking by id")
+  print("13. Show all bookings")
+  print("---------------------------")
+  print("14. Add a destination")
+  print("15. Find a destination by id")
+  print("16. Find a destination by Location")
+  print("17. Show all destinations")
+  print("18. Delete a destination")
+
+  print("19. Exit")
+    
+  option = int(input("Choice: "))
+  print (option)
+  if option == 1:
+      insertTraveler()
+  elif option == 2:
+      findUserbyID()
+  elif option == 3:
+      findUserbyName()
+  elif option == 4:
+      showallUs()
+  elif option == 5:
+      updateUser()
+  elif option == 6:
+      insertMachine()
+	elif option == 7:
+			findMachinebyID
+  elif option == 8:
+      findMachinebyManu()
+  elif option == 9:
+      showallMachines()
+  elif option == 10:
+      average()
+	elif option == 11:
+			insertBooking()
+  elif option == 12:
+      findBookingbyID()
+  elif option == 13:
+      aggregate()
+  elif option == 14:
+      insertDestination()
+  elif option == 15:
+      findDestbyID()
+  elif option == 16:
+      findDestbyName()
+  elif option == 17:
+      showallDestinations()
+  elif option == 18:
+      deleteDestination()
